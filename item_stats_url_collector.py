@@ -34,7 +34,7 @@ def get_urls(firefox: Firefox) -> List[str]:
     backpack = firefox.find_element(By.ID, "backpack")
     backpack_pages = backpack.find_elements(By.CLASS_NAME, "backpack-page")
     actions = ActionChains(firefox)
-    for backpack_page in [backpack_pages[1]]:
+    for backpack_page in backpack_pages:
         scroll_to_element(firefox, backpack_page)
         item_list = backpack_page.find_element(By.CLASS_NAME, "item-list")
         items = item_list.find_elements(By.TAG_NAME, "li")
@@ -52,7 +52,7 @@ def get_urls(firefox: Firefox) -> List[str]:
                     By.ID, "popover-additional-links").find_elements(By.XPATH, ".//a[contains(@href,'stats')]")
             stats_link = links[0]
             url = stats_link.get_attribute("href")
-            if url not in urls:
+            if url not in urls and "Tradable" in stats_link.get_attribute("href"):
                 urls.append(stats_link.get_attribute("href"))
             actions.move_to_element(navbar_header).perform()
     return urls
