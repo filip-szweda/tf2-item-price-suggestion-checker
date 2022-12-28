@@ -8,7 +8,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions
 from selenium.common.exceptions import NoSuchElementException
 
-BP_URL = ""
+BP_URL = "https://backpack.tf/profiles/76561198263024930"
 
 
 def close_cookies(browser: Chrome) -> NoReturn:
@@ -38,22 +38,23 @@ def get_urls(browser: Chrome) -> List[str]:
         item_list = backpack_page.find_element(By.CLASS_NAME, "item-list")
         items = item_list.find_elements(By.TAG_NAME, "li")
         for item in items:
-            actions.move_to_element(item).perform()
-            WebDriverWait(browser, 60).until(
-                expected_conditions.presence_of_element_located((By.CLASS_NAME, "popover-content")))
-            try:
-                links = item_list.find_element(By.CLASS_NAME, "popover.right.in").find_element(By.CLASS_NAME,
-                                                                                               "popover-content").find_element(
-                    By.ID, "popover-additional-links").find_elements(By.XPATH, ".//a[contains(@href,'stats')]")
-            except NoSuchElementException:
-                links = item_list.find_element(By.CLASS_NAME, "popover.left.in").find_element(By.CLASS_NAME,
-                                                                                              "popover-content").find_element(
-                    By.ID, "popover-additional-links").find_elements(By.XPATH, ".//a[contains(@href,'stats')]")
-            stats_link = links[0]
-            url = stats_link.get_attribute("href")
-            if url not in urls and "Tradable" in stats_link.get_attribute("href"):
-                urls.append(stats_link.get_attribute("href"))
-            actions.move_to_element(navbar_header).perform()
+            if item.get_attribute("class") != "item spacer":
+                actions.move_to_element(item).perform()
+                WebDriverWait(browser, 60).until(
+                    expected_conditions.presence_of_element_located((By.CLASS_NAME, "popover-content")))
+                try:
+                    links = item_list.find_element(By.CLASS_NAME, "popover.right.in").find_element(By.CLASS_NAME,
+                                                                                                   "popover-content").find_element(
+                        By.ID, "popover-additional-links").find_elements(By.XPATH, ".//a[contains(@href,'stats')]")
+                except NoSuchElementException:
+                    links = item_list.find_element(By.CLASS_NAME, "popover.left.in").find_element(By.CLASS_NAME,
+                                                                                                  "popover-content").find_element(
+                        By.ID, "popover-additional-links").find_elements(By.XPATH, ".//a[contains(@href,'stats')]")
+                stats_link = links[0]
+                url = stats_link.get_attribute("href")
+                if url not in urls and "Tradable" in url and "Non-Tradable" not in url:
+                    urls.append(stats_link.get_attribute("href"))
+                actions.move_to_element(navbar_header).perform()
     return urls
 
 
